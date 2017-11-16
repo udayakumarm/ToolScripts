@@ -1,3 +1,5 @@
+# Version 0.1 - 
+# Feature - 
 import jira.client
 from jira.client import JIRA
 import collections
