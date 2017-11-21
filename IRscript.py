@@ -1,5 +1,8 @@
-Version 1.01
-
+#Version 0.01
+#Version 0.02 (16 Nov 2017)
+#	Changed Username & password as input feilds from user.
+#	Now the script can be run from any client PC.
+#   
 import jira.client
 from jira.client import JIRA
 import collections
@@ -13,11 +16,13 @@ from xlrd import open_workbook
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
+import getpass
 
 # for Logging
 import logging
 LOG_FILENAME = 'JIRA.log'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+logging.getLogger("urlib3").setLevel(logging.WARNING)
 
 # Counter for number of defect whose IR is about to Miss as per Current date
 counter=0
@@ -31,11 +36,15 @@ KMBTCount=0
 XeroxCount=0
 OKICount=0
 
+# Username & Password
+username = input ('Login:')
+password = getpass.getpass('Password:')
+
 
 # JIRA connection Logic
 try:
     jira_options = {'server': 'https://jira.efi.com'}
-    jira = JIRA(options=jira_options, basic_auth=('avinasku', ''))
+    jira = JIRA(options=jira_options, basic_auth=(username, password))
 
 except Exception as e:
     logging.debug("Failed to connect to JIRA: %s" % e)
@@ -61,7 +70,7 @@ def sendMail(Partner):
     FITID= str("FIT10%s"%issue.id)
     Sub = " : ".join([FITID, Desc])
     Due=str("IR Due date is %s"%Partner["IRDueDate"])
-    messageBody = "Hi Team,\n\nPlease reproduce the issue and update IR\n" +"\n" +Due + "\n\nThanks\nAvinash\n\nNote:-Auto Generated mail Please Do Not Respond"
+    messageBody = "Hi Team,\n\nPlease reproduce the issue and provide IR\n" +"\n" +Due + "\n\nThanks\nAvinash\n\nNote:-Auto Generated mail Please Do Not Respond"
     msg = MIMEText(messageBody)
     msg['Subject'] = "(Important-IR Missing) " + Sub
     msg["From"] = 'avinash.kumar1@efi.com'
@@ -84,34 +93,34 @@ def parseIssue(JiraDetails):
             DueDate= issueCreatedDate + datetime.timedelta(days=4)
             print(DueDate)
             Partner = {'Defect_ID': ID, 'Summary': Desc, 'MailID': Addr, 'IRDueDate': DueDate}
-            sendMail(Partner)
+            #sendMail(Partner)
         elif(setPriority[1] == Priority and Age>4):
             DueDate = issueCreatedDate + datetime.timedelta(days=9)
             print(DueDate)
             Partner = {'Defect_ID': ID, 'Summary': Desc, 'MailID': Addr, 'IRDueDate': DueDate}
-            sendMail(Partner)
+            #sendMail(Partner)
         elif(setPriority[2] == Priority and Age>6):
             DueDate = issueCreatedDate + datetime.timedelta(days=12)
             print(DueDate)
             Partner = {'Defect_ID': ID, 'Summary': Desc, 'MailID': Addr, 'IRDueDate': DueDate}
-            sendMail(Partner)
+            #sendMail(Partner)
     elif(storeOEMName == 'Canon' or 'Sharp' or 'KDC' or 'Riso' or 'KMBT' or 'OKI' or 'Xerox'):
         if (setPriority[0] == Priority and Age > 5):
             DueDate = issueCreatedDate + datetime.timedelta(days=12)
             print(DueDate)
             print(issue.fields.summary)
             Partner = {'Defect_ID': ID, 'Summary': Desc, 'MailID': Addr, 'IRDueDate': DueDate}
-            sendMail(Partner)
+            #sendMail(Partner)
         elif (setPriority[1] == Priority and Age > 10):
             DueDate = issueCreatedDate + datetime.timedelta(days=19)
             print(DueDate)
             Partner = {'Defect_ID': ID, 'Summary': Desc, 'MailID': Addr, 'IRDueDate': DueDate}
-            sendMail(Partner)
+            #sendMail(Partner)
         elif (setPriority[2] == Priority and Age > 15):
             DueDate = issueCreatedDate + datetime.timedelta(days=25)
             print(DueDate)
             Partner = {'Defect_ID': ID, 'Summary': Desc, 'MailID': Addr, 'IRDueDate': DueDate}
-            sendMail(Partner)
+            #sendMail(Partner)
     return
 
 #Parsing the defect from JIRA Filter
@@ -152,6 +161,7 @@ for i in jira.search_issues('filter=64702',startAt=0, maxResults=1000):
                         parseIssue(JiraDetails)
                     elif (OEM[2] == storeOEMName):
                         SharpCount+=1
+                        Addr = "avinash.kumar1@efi.com"
                         Addr = "avinash.kumar1@efi.com"
                         #Addr = "Sharp_Sustaining@efi.com"
                         JiraDetails = {'Defect_ID': ID, 'Summary': Desc, 'urgency': Priority, 'Partner': storeOEMName,'Duration': Age, 'MailID': Addr, 'createdDate': issueCreatedDate}
