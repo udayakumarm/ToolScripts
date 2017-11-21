@@ -1,8 +1,9 @@
 #Version 0.01
-#Version 0.02 (16 Nov 2017)
-#	Changed Username & password as input feilds from user.
-#	Now the script can be run from any client PC.
-#   
+
+#	Version 0.02 (16 Nov 2017)
+#	1. Changed Username & password as input feilds from user.
+#	2. Now the script can be run from any client PC.
+#   3. Masking the urlib3 comments
 import jira.client
 from jira.client import JIRA
 import collections
